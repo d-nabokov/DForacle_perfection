@@ -248,25 +248,25 @@ def get_config(argv) -> Config:
 # encoding = encoding_for_compound_split(z_values_arr, thresholds)
 # print(" ".join(map(str, encoding)))
 # print(list(np.concatenate(z_values_arr)))
-# ct = build_full_rotate_ciphertext(
-#     z_values,
-#     4,
-#     thresholds,
-#     enabled,
-#     signs,
-#     SMALLEST_THRESHOLD,
-#     block_idx,
-#     var_idx,
-#     oracle,
-# )
-# # ct = build_arbitrary_combination_ciphertext(
-# #     [-3, -3, -104, 0],
+# # ct = build_full_rotate_ciphertext(
+# #     z_values,
 # #     4,
-# #     0,
+# #     thresholds,
+# #     enabled,
+# #     signs,
 # #     SMALLEST_THRESHOLD,
-# #     [0, 1, 2, 3],
+# #     block_idx,
+# #     var_idx,
 # #     oracle,
 # # )
+# ct = build_arbitrary_combination_ciphertext(
+#     [-13, 7, 3, -13],
+#     4,
+#     0,
+#     SMALLEST_THRESHOLD,
+#     [140, 173, 359, 675],
+#     oracle,
+# )
 # print(", ".join(f"0x{b:02x}" for b in ct))
 # exit()
 
@@ -482,65 +482,67 @@ for key_idx in range(test_keys):
 
     sk_decoded_marginals = [0] * sk_len
 
-    # base case: full rotation checks
-    t0 = time.perf_counter_ns()
-    checks, split = full_rotation_checks, full_rotation_split
-    check_encoding = multibit_encoding(split)
-    pickled_filename = f"cond_prob_all_y_0{int(p * 100)}_{len(split)}bits"
-    if p == 0.95 and len(split) in [6, 7, 8, 9, 10]:
-        if os.path.exists(pickled_filename):
-            with open(pickled_filename, "rb") as f:
-                all_y_pmf, pr_y = pickle.load(f)
-        else:
-            all_y_pmf, pr_y = s_distribution_for_all_y(
-                pr_oracle, check_encoding, joint_pmf
-            )
-            with open(pickled_filename, "wb") as f:
-                pickle.dump((all_y_pmf, pr_y), f)
-    else:
-        all_y_pmf, pr_y = s_distribution_for_all_y(pr_oracle, check_encoding, joint_pmf)
+    # # base case: full rotation checks
+    # t0 = time.perf_counter_ns()
+    # checks, split = full_rotation_checks, full_rotation_split
+    # check_encoding = multibit_encoding(split)
+    # pickled_filename = f"cond_prob_all_y_0{int(p * 100)}_{len(split)}bits"
+    # if p == 0.95 and len(split) in [6, 7, 8, 9, 10]:
+    #     if os.path.exists(pickled_filename):
+    #         with open(pickled_filename, "rb") as f:
+    #             all_y_pmf, pr_y = pickle.load(f)
+    #     else:
+    #         all_y_pmf, pr_y = s_distribution_for_all_y(
+    #             pr_oracle, check_encoding, joint_pmf
+    #         )
+    #         with open(pickled_filename, "wb") as f:
+    #             pickle.dump((all_y_pmf, pr_y), f)
+    # else:
+    #     all_y_pmf, pr_y = s_distribution_for_all_y(pr_oracle, check_encoding, joint_pmf)
 
-    all_checks.extend(checks)
-    for check_idxs in checks:
-        if cfg.simulate_oracle:
-            enc_idx = 0
-            for var_idx in check_idxs:
-                enc_idx = enc_idx * coef_support_size + (sk[var_idx] + ETA)
-            x = check_encoding[enc_idx]
-            y = sample_coef_static(x, pr_oracle)
-        else:
-            y = []
-            for inequality in full_rotation_inequalities:
-                z_values, thresholds, enabled, signs = inequality
-                ct = build_full_rotate_ciphertext(
-                    z_values,
-                    joint_weight,
-                    thresholds,
-                    enabled,
-                    signs,
-                    SMALLEST_THRESHOLD,
-                    check_idxs[0] // n,
-                    check_idxs[0] % n,
-                    oracle,
-                )
-                response = oracle.query(ct)
-                y.append(response)
-        y_idx = bit_tuple_to_int(y)
-        pmf = all_y_pmf[y_idx]
+    # all_checks.extend(checks)
+    # for check_idxs in checks:
+    #     if cfg.simulate_oracle:
+    #         enc_idx = 0
+    #         for var_idx in check_idxs:
+    #             enc_idx = enc_idx * coef_support_size + (sk[var_idx] + ETA)
+    #         x = check_encoding[enc_idx]
+    #         y = sample_coef_static(x, pr_oracle)
+    #     else:
+    #         y = []
+    #         for inequality in full_rotation_inequalities:
+    #             z_values, thresholds, enabled, signs = inequality
+    #             ct = build_full_rotate_ciphertext(
+    #                 z_values,
+    #                 joint_weight,
+    #                 thresholds,
+    #                 enabled,
+    #                 signs,
+    #                 SMALLEST_THRESHOLD,
+    #                 check_idxs[0] // n,
+    #                 check_idxs[0] % n,
+    #                 oracle,
+    #             )
+    #             response = oracle.query(ct)
+    #             y.append(response)
+    #     y_idx = bit_tuple_to_int(y)
+    #     pmf = all_y_pmf[y_idx]
 
-        channel_pmf = np.array(
-            list(pr_cond_yx(y, x, pr_oracle) for x in check_encoding)
-        )
-        channel_pmf /= sum(channel_pmf)
-        check_variables.append(channel_pmf)
+    #     channel_pmf = np.array(
+    #         list(pr_cond_yx(y, x, pr_oracle) for x in check_encoding)
+    #     )
+    #     channel_pmf /= sum(channel_pmf)
+    #     check_variables.append(channel_pmf)
 
-        # check_variables.append(pmf)
-        t1 = time.perf_counter_ns()
-        s_marginal = marginal_pmf(pmf, joint_weight)
-        for i, var_idx in enumerate(check_idxs):
-            sk_decoded_marginals[var_idx] = s_marginal[i]
-        time_base_marginals += time.perf_counter_ns() - t1
-    time_base += time.perf_counter_ns() - t0
+    #     # check_variables.append(pmf)
+    #     t1 = time.perf_counter_ns()
+    #     s_marginal = marginal_pmf(pmf, joint_weight)
+    #     for i, var_idx in enumerate(check_idxs):
+    #         sk_decoded_marginals[var_idx] = s_marginal[i]
+    #     time_base_marginals += time.perf_counter_ns() - t1
+    # time_base += time.perf_counter_ns() - t0
+
+    sk_decoded_marginals = secret_variables
 
     if cfg.print_intermediate_info:
         base_bad_variables = []
