@@ -230,6 +230,46 @@ def get_config(argv) -> Config:
     return Config(**vars(args))
 
 
+# class Object(object):
+#     pass
+
+
+# oracle = Object()
+# oracle.rand_mask = b"\x00\x00\x00\x00\x00\x00\x00\x00"
+# oracle.masked_addr = b"\x00\x00\x00\x00\x00\x00\x00\x00"
+# oracle.lowest_message_bit = 7
+# z_values = [-3, -3, -104, 0]
+# enabled = [1, 1, 1]
+# signs = [1, 1, 0]
+# thresholds = [0, 1, 1, 1]
+# block_idx = 0
+# var_idx = 1
+# z_values_arr = build_z_values_arr(z_values, enabled, signs)
+# encoding = encoding_for_compound_split(z_values_arr, thresholds)
+# print(" ".join(map(str, encoding)))
+# print(list(np.concatenate(z_values_arr)))
+# ct = build_full_rotate_ciphertext(
+#     z_values,
+#     4,
+#     thresholds,
+#     enabled,
+#     signs,
+#     SMALLEST_THRESHOLD,
+#     block_idx,
+#     var_idx,
+#     oracle,
+# )
+# # ct = build_arbitrary_combination_ciphertext(
+# #     [-3, -3, -104, 0],
+# #     4,
+# #     0,
+# #     SMALLEST_THRESHOLD,
+# #     [0, 1, 2, 3],
+# #     oracle,
+# # )
+# print(", ".join(f"0x{b:02x}" for b in ct))
+# exit()
+
 cfg = get_config(sys.argv[1:])
 
 p = 0.95
