@@ -632,6 +632,10 @@ for key_idx in range(test_keys):
                 x = encoding[enc_idx]
                 y = pr_oracle.predict_bit(x, 0)
             else:
+                enc_idx = 0
+                for var_idx in check_idxs:
+                    enc_idx = enc_idx * coef_support_size + (sk[var_idx] + ETA)
+                x = encoding[enc_idx]
                 ct = build_arbitrary_combination_ciphertext(
                     z_values,
                     joint_weight,
@@ -641,6 +645,8 @@ for key_idx in range(test_keys):
                     oracle,
                 )
                 y = oracle.query(ct)
+                print(f"sk coefs={list(sk[var_idx] for var_idx in check_idxs)}")
+                print(f"x==y?:{x == y}; x={int(x)}, y={int(y)}")
             y_statistic[y] += 1
             channel_pmf = np.array(list(pr_oracle.prob_of(x, y, 0) for x in encoding))
             channel_pmf /= sum(channel_pmf)
