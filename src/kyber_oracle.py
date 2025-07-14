@@ -46,6 +46,9 @@ class KyberOracle:
         print("target_addr=", end="")
         for i in range(8):
             print(f"{self.rand_mask[i] ^ self.masked_addr[i]:x}", end="")
+        print()
+        print("Setting random mask to 0")
+        self.rand_mask = bytes(8)
         self.lowest_message_bit = 7
         # There is an off-by-one problem: if message bit is 0, then
         # (v - dot(u, s))[lowest_message_bit] - threshold result in 0
