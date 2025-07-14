@@ -644,6 +644,11 @@ for key_idx in range(test_keys):
                     check_idxs,
                     oracle,
                 )
+                if batch_no == 0 and check_idxs == checks[0]:
+                    print(f"{z_values=}")
+                    print(f"{threshold=}")
+                    print(f"{check_idxs=}")
+                    print(f"{ct=}")
                 y = oracle.query(ct)
                 print(f"sk coefs={list(sk[var_idx] for var_idx in check_idxs)}")
                 print(f"x==y?:{x == y}; x={int(x)}, y={int(y)}")

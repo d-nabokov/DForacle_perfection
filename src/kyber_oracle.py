@@ -41,6 +41,11 @@ class KyberOracle:
 
         self.rand_mask = recv_exact(self._sock, 8)
         self.masked_addr = recv_exact(self._sock, 8)
+        print(f"rand_mask={self.rand_mask}")
+        print(f"masked_addr={self.masked_addr}")
+        print("target_addr=", end="")
+        for i in range(8):
+            print(f"{self.rand_mask[i] ^ self.masked_addr[i]:x}", end="")
         self.lowest_message_bit = 7
         # There is an off-by-one problem: if message bit is 0, then
         # (v - dot(u, s))[lowest_message_bit] - threshold result in 0
