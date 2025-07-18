@@ -60,6 +60,7 @@ from src.kyber_oracle import (
     KyberOracle,
     build_arbitrary_combination_ciphertext,
     build_full_rotate_ciphertext,
+    build_naive_ciphertext,
     read_sk,
 )
 from src.ldpc import (
@@ -236,6 +237,54 @@ def get_config(argv) -> Config:
     args = p.parse_args(argv)  # let argparse pull from sys.argv when argv is None
     return Config(**vars(args))
 
+
+class Object(object):
+    pass
+
+
+oracle = Object()
+# oracle.rand_mask = b"\x967\x89K\xd6\x13[1"
+oracle.rand_mask = bytes(8)
+oracle.masked_addr = b"\x00\x06\xb5\xa3\x01\x00\x00\x00"
+oracle.lowest_message_bit = 7
+# z_values = [-3, -3, -104, 0]
+# enabled = [1, 1, 1]
+# signs = [1, 1, 0]
+# thresholds = [0, 1, 1, 1]
+# block_idx = 0
+# var_idx = 1
+# z_values_arr = build_z_values_arr(z_values, enabled, signs)
+# encoding = encoding_for_compound_split(z_values_arr, thresholds)
+# print(" ".join(map(str, encoding)))
+# print(list(np.concatenate(z_values_arr)))
+# ct = build_full_rotate_ciphertext(
+#     z_values,
+#     4,
+#     thresholds,
+#     enabled,
+#     signs,
+#     SMALLEST_THRESHOLD,
+#     block_idx,
+#     var_idx,
+#     oracle,
+# )
+ct = build_arbitrary_combination_ciphertext(
+    [-13, 7, 3, -13],
+    4,
+    0,
+    SMALLEST_THRESHOLD,
+    [140, 173, 359, 475],
+    oracle,
+)
+# ct = build_naive_ciphertext(
+#     z_value=208,
+#     threshold_value=2,
+#     k_step=SMALLEST_THRESHOLD,
+#     block_idx=0,
+#     oracle=oracle,
+# )
+print(", ".join(f"0x{b:02x}" for b in ct))
+exit()
 
 cfg = get_config(sys.argv[1:])
 
