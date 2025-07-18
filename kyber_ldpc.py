@@ -284,7 +284,7 @@ ct = build_naive_ciphertext(
     oracle=oracle,
 )
 print(", ".join(f"0x{b:02x}" for b in ct))
-# exit()
+exit()
 
 cfg = get_config(sys.argv[1:])
 
