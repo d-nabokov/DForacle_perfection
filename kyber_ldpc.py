@@ -268,23 +268,23 @@ oracle.lowest_message_bit = 7
 #     var_idx,
 #     oracle,
 # )
-ct = build_arbitrary_combination_ciphertext(
-    [-13, 7, 3, -13],
-    4,
-    0,
-    SMALLEST_THRESHOLD,
-    [140, 173, 359, 475],
-    oracle,
-)
-# ct = build_naive_ciphertext(
-#     z_value=208,
-#     threshold_value=2,
-#     k_step=SMALLEST_THRESHOLD,
-#     block_idx=0,
-#     oracle=oracle,
+# ct = build_arbitrary_combination_ciphertext(
+#     [-13, 7, 3, -13],
+#     4,
+#     0,
+#     SMALLEST_THRESHOLD,
+#     [140, 173, 359, 475],
+#     oracle,
 # )
+ct = build_naive_ciphertext(
+    z_value=208,
+    threshold_value=1,
+    k_step=SMALLEST_THRESHOLD,
+    block_idx=0,
+    oracle=oracle,
+)
 print(", ".join(f"0x{b:02x}" for b in ct))
-exit()
+# exit()
 
 cfg = get_config(sys.argv[1:])
 
