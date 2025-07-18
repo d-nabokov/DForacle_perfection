@@ -45,7 +45,7 @@ class KyberOracle:
         print(f"masked_addr={self.masked_addr}")
         print("target_addr=", end="")
         for i in range(len(self.rand_mask)):
-            print(f"{self.rand_mask[i] ^ self.masked_addr[i]:x}", end="")
+            print(f"{self.rand_mask[i] ^ self.masked_addr[i]:02x}", end="")
         print("")
         # self.lowest_message_bit = 7
         # # There is an off-by-one problem: if message bit is 0, then
@@ -99,7 +99,7 @@ def build_polymsg_from_oracle(oracle, val_for_one, use_random) -> Poly:
     to other positions
     """
     v = Poly()
-    target_ptr_idx = oracle.lowest_message_bit % 64
+    target_ptr_idx = oracle.lowest_message_bit // 64
     msg_byte_index = oracle.lowest_message_bit // 8
     msg_bit_mask = 1 << (oracle.lowest_message_bit & 7)
 
