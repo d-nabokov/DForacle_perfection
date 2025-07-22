@@ -47,21 +47,21 @@ class KyberOracle:
         for i in range(len(self.rand_mask)):
             print(f"{self.rand_mask[i] ^ self.masked_addr[i]:02x}", end="")
         print("")
-        # self.lowest_message_bit = 7
-        # # There is an off-by-one problem: if message bit is 0, then
-        # # (v - dot(u, s))[lowest_message_bit] - threshold result in 0
-        # # when the value is Q/4=832, but when message bit is 1, we
-        # # instead get -832 which is compressed to 1! That is because uncompressed v instead of Q/2=1664 goes to 1665. So, we look
-        # # for offset of message which has a one at sensitive for DMP
-        # # position, but we XOR that position with 1, so we end up
-        # # with zero
-        # for i in range(7, 56):
-        #     rbit = (self.rand_mask[i // 8] >> (i & 7)) & 1
-        #     mabit = (self.masked_addr[i // 8] >> (i & 7)) & 1
-        #     mbit = rbit ^ mabit
-        #     if mbit == 1:
-        #         self.lowest_message_bit = i
-        #         break
+        self.lowest_message_bit = 7
+        # There is an off-by-one problem: if message bit is 0, then
+        # (v - dot(u, s))[lowest_message_bit] - threshold result in 0
+        # when the value is Q/4=832, but when message bit is 1, we
+        # instead get -832 which is compressed to 1! That is because uncompressed v instead of Q/2=1664 goes to 1665. So, we look
+        # for offset of message which has a one at sensitive for DMP
+        # position, but we XOR that position with 1, so we end up
+        # with zero
+        for i in range(7, 56):
+            rbit = (self.rand_mask[i // 8] >> (i & 7)) & 1
+            mabit = (self.masked_addr[i // 8] >> (i & 7)) & 1
+            mbit = rbit ^ mabit
+            if mbit == 1:
+                self.lowest_message_bit = i
+                break
 
     def query(self, ct: bytes) -> int:
         """
