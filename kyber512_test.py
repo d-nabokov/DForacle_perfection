@@ -21,6 +21,10 @@ while True:
     block_idx = int(block_idx[0])
     flip_idx = int(flip_idx[0])
     sk_idx = block_idx * 256 + flip_idx
+    print(f"{guess=}")
+    print(f"{block_idx=}")
+    print(f"{flip_idx=}")
+    print(f"{sk_idx=}")
     ct = build_arbitrary_combination_ciphertext(
         z_values=[-208],
         weight=1,
