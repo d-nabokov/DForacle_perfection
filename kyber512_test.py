@@ -28,7 +28,7 @@ while True:
     ct = build_arbitrary_combination_ciphertext(
         z_values=[-208],
         weight=1,
-        threshold_value=guess,
+        threshold_value=(4 - guess),
         k_step=SMALLEST_THRESHOLD,
         sk_idxs=[sk_idx],
         oracle=oracle,
