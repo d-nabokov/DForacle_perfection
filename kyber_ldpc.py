@@ -243,10 +243,17 @@ class Object(object):
 
 
 oracle = Object()
-# oracle.rand_mask = b"\x967\x89K\xd6\x13[1"
-oracle.rand_mask = bytes(8)
-oracle.masked_addr = b"\x00\x06\xb5\xa3\x01\x00\x00\x00"
-oracle.lowest_message_bit = 7
+oracle.rand_mask = b"\x9f\x03\xa5\xcc\x1f\xa8\r\x1a"
+oracle.masked_addr = b"\x9f\xc4\x0co\x1e\xa8\r\x1a"
+for i in range(7, 56):
+    rbit = (oracle.rand_mask[i // 8] >> (i & 7)) & 1
+    mabit = (oracle.masked_addr[i // 8] >> (i & 7)) & 1
+    mbit = rbit ^ mabit
+    if mbit == 1:
+        oracle.lowest_message_bit = i
+        break
+# oracle.lowest_message_bit = 10
+print(f"{oracle.lowest_message_bit=}")
 # z_values = [-3, -3, -104, 0]
 # enabled = [1, 1, 1]
 # signs = [1, 1, 0]
@@ -276,13 +283,21 @@ oracle.lowest_message_bit = 7
 #     [140, 173, 359, 475],
 #     oracle,
 # )
-ct = build_naive_ciphertext(
-    z_value=208,
-    threshold_value=1,
+ct = build_arbitrary_combination_ciphertext(
+    z_values=[-208],
+    weight=1,
+    threshold_value=(4 - 5),
     k_step=SMALLEST_THRESHOLD,
-    block_idx=0,
+    sk_idxs=[0],
     oracle=oracle,
 )
+# ct = build_naive_ciphertext(
+#     z_value=208,
+#     threshold_value=2,
+#     k_step=SMALLEST_THRESHOLD,
+#     block_idx=0,
+#     oracle=oracle,
+# )
 print(", ".join(f"0x{b:02x}" for b in ct))
 exit()
 
