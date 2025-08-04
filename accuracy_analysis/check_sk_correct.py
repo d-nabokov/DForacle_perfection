@@ -11,7 +11,7 @@ def load_secret_key(path):
 
 def load_guess_key(path):
     """Read k*n integers from kyber.txt."""
-    p = re.compile("bit:(\d+),guess:(-?\d+)")
+    p = re.compile(r"bit:(\d+),guess:(-?\d+)")
     guesses = {}
     with path.open() as f:
         for line in f:
