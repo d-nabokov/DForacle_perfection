@@ -68,12 +68,13 @@ class KyberOracle:
                 break
         print(f"lowest_message_bit={self.lowest_message_bit}")
 
-    def query(self, ct: bytes, expect: int) -> int:
+    def query(self, ct: bytes, expect) -> int:
         """
         Send one ciphertext to Rust and return its single-byte reply.
         """
         assert len(ct) == CRYPTO_CIPHERTEXTBYTES, "ciphertext size mismatch"
 
+        expect = int(expect)
         self._sock.sendall(bytearray([expect]))
         self._sock.sendall(ct)  # ciphertext
         return recv_exact(self._sock, 1)[0]
