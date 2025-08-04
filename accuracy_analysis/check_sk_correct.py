@@ -3,16 +3,14 @@ from pathlib import Path
 
 
 def load_secret_key(path):
-    """Read 512 integers from kyber.txt."""
+    """Read k*n integers from kyber.txt."""
     with path.open() as f:
         sk = [int(line) for line in f if line.strip()]
-    if len(sk) != 512:
-        raise ValueError(f"{path} should contain 512 lines, found {len(sk)}")
     return sk
 
 
 def load_guess_key(path):
-    """Read 512 integers from kyber.txt."""
+    """Read k*n integers from kyber.txt."""
     p = re.compile("bit:(\d+),guess:(-?\d+)")
     guesses = {}
     with path.open() as f:
