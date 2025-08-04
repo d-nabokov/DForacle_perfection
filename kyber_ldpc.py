@@ -406,7 +406,7 @@ for key_idx in range(test_keys):
                         check_idxs[0] % n,
                         oracle,
                     )
-                    response = oracle.query(ct)
+                    response = oracle.query(ct, x[ineq_idx])
 
                     z_values_arr = build_z_values_arr(z_values, enabled, signs)
                     expected = []
@@ -541,13 +541,13 @@ for key_idx in range(test_keys):
                     check_idxs,
                     oracle,
                 )
-                y = oracle.query(ct)
-                pr_oracle.oracle_calls += 1
-
                 enc_idx = 0
                 for var_idx in check_idxs:
                     enc_idx = enc_idx * coef_support_size + (sk[var_idx] + ETA)
                 x = encoding[enc_idx]
+                y = oracle.query(ct, x)
+                pr_oracle.oracle_calls += 1
+
                 print(
                     f"{check_pos_in_batch}: secret variables: {check_idxs}, z_values: {z_values}, threshold: {threshold}",
                     file=ct_info,
@@ -725,7 +725,11 @@ for key_idx in range(test_keys):
                 y = sample_coef_static(x, pr_oracle)
             else:
                 y = []
-                for z_values in z_values_arr:
+                enc_idx = 0
+                for var_idx in check_idxs:
+                    enc_idx = enc_idx * coef_support_size + (sk[var_idx] + ETA)
+                x = encoding[enc_idx]
+                for ineq_idx, z_values in enumerate(z_values_arr):
                     ct = build_arbitrary_combination_ciphertext(
                         z_values,
                         joint_weight,
@@ -734,7 +738,7 @@ for key_idx in range(test_keys):
                         check_idxs,
                         oracle,
                     )
-                    response = oracle.query(ct)
+                    response = oracle.query(ct, x[ineq_idx])
                     pr_oracle.oracle_calls += 1
                     y.append(response)
             for y_val in y:
